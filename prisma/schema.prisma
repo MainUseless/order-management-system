@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// prisma/schema.prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // uncomment next line if you use Prisma <5.10
+  // directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  address   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Cart      Cart?
+  Order     Order[]
+}
+
+model Product {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String
+  price       Float
+  stock       Int
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  CartProduct CartProduct[]
+  OrderProduct OrderProduct[]
+}
+
+model Order {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  status    Status
+  total     Float?
+  coupon    Coupon?  @relation(fields: [couponId], references: [id])
+  couponId  Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  products OrderProduct[]
+}
+
+enum Status {
+  PENDING
+  DELIVERED
+  CANCELLED
+}
+
+model Cart {
+  id          Int           @id @default(autoincrement())
+  userId      Int           @unique
+  user        User          @relation(fields: [userId], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  products CartProduct[]
+}
+
+model CartProduct {
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  cartId    Int
+  product   Product  @relation(fields: [productId], references: [id])
+  productId Int
+  quantity  Int
+  updatedAt DateTime @updatedAt
+
+  @@id([cartId, productId])
+}
+
+
+model OrderProduct {
+  order      Order    @relation(fields: [orderId], references: [id])
+  orderId    Int
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  Int
+  quantity   Int
+  updatedAt  DateTime @updatedAt
+
+  @@id([orderId, productId])
+}
+
+model Coupon {
+  id          Int      @id @default(autoincrement())
+  code        String
+  discount    Float
+  orders      Order[]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
