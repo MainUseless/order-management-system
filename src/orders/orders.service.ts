@@ -3,9 +3,18 @@ import { Status } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
+/**
+ * Service responsible for managing orders.
+ */
 export class OrdersService {
   constructor(private readonly databaseService: DatabaseService) {}
 
+  /**
+   * Creates a new order for the specified user.
+   * @param userId - The ID of the user placing the order.
+   * @returns The total amount of the order.
+   * @throws {HttpException} If there is an error creating the order.
+   */
   async createOrder(userId: number) {
     try {
       return await this.databaseService.$transaction(
@@ -86,6 +95,12 @@ export class OrdersService {
     }
   }
 
+  /**
+   * Calculates the total amount of an order.
+   * @param products - The products in the order.
+   * @param discount - The discount to apply to the order (default: 0).
+   * @returns The total amount of the order.
+   */
   calculateTotal(products: any[], discount: number = 0) {
     return (
       products.reduce(
@@ -97,6 +112,12 @@ export class OrdersService {
     );
   }
 
+  /**
+   * Retrieves an order by its ID.
+   * @param orderId - The ID of the order to retrieve.
+   * @returns The retrieved order.
+   * @throws {HttpException} If there is an error finding the order.
+   */
   async getOrder(orderId: number) {
     try {
       const order = await this.databaseService.order.findUnique({
@@ -126,6 +147,12 @@ export class OrdersService {
     }
   }
 
+  /**
+   * Updates the status of an order.
+   * @param orderId - The ID of the order to update.
+   * @param status - The new status of the order.
+   * @returns The updated order.
+   */
   async updateOrderStatus(orderId: number, status: Status) {
     return await this.databaseService.order.update({
       where: {
@@ -137,6 +164,11 @@ export class OrdersService {
     });
   }
 
+  /**
+   * Retrieves all orders for a given user.
+   * @param userId - The ID of the user.
+   * @returns The list of orders for the user.
+   */
   async getUserOrders(userId: number) {
     return await this.databaseService.order.findMany({
       where: {
@@ -146,6 +178,11 @@ export class OrdersService {
     });
   }
 
+  /**
+   * Applies a coupon to an order.
+   * @param obj - An object containing the order ID and coupon ID.
+   * @returns The updated order.
+   */
   async applyCoupon(obj: { orderId: number; couponId: number }) {
     return await this.databaseService.order.update({
       where: {

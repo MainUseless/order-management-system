@@ -2,9 +2,17 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
+/**
+ * Service responsible for managing the user's cart.
+ */
 export class CartService {
   constructor(private readonly databaseService: DatabaseService) {}
 
+  /**
+   * Retrieves the cart for the specified user.
+   * @param userId - The ID of the user.
+   * @returns A Promise that resolves to the user's cart.
+   */
   async getCart(userId: number) {
     return this.databaseService.cart.findUnique({
       where: { userId: +userId },
@@ -12,6 +20,12 @@ export class CartService {
     });
   }
 
+  /**
+   * Adds a product to the user's cart.
+   * @param obj - An object containing the user ID, product ID, and quantity.
+   * @throws HttpException if the quantity is invalid.
+   * @returns A Promise that resolves to the updated cart.
+   */
   async addToCart(obj: {
     userId: number;
     productId: number;
@@ -49,6 +63,11 @@ export class CartService {
     }
   }
 
+  /**
+   * Removes a product from the user's cart.
+   * @param obj - An object containing the user ID and product ID.
+   * @returns A Promise that resolves when the product is removed from the cart.
+   */
   async removeFromCart(obj: { userId: number; productId: number }) {
     await this.databaseService.cartProduct.delete({
       where: {
@@ -57,6 +76,12 @@ export class CartService {
     });
   }
 
+  /**
+   * Updates the quantity of a product in the user's cart.
+   * @param obj - An object containing the user ID, product ID, and new quantity.
+   * @throws HttpException if the quantity is invalid.
+   * @returns A Promise that resolves to the updated cart.
+   */
   async updateCart(obj: {
     userId: number;
     productId: number;
